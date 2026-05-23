@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './App.css';
 import type { BibleBook, AppTheme, BibleData, ManifestEntry } from './types';
@@ -53,7 +53,12 @@ function App() {
   const [currentTheme, setCurrentTheme] = useState<AppTheme>(() => (localStorage.getItem('selectedTheme') as AppTheme) || 'System');
   const [fontSize, setFontSize] = useState(() => Number(localStorage.getItem('fontSize')) || 21);
 
+  const headerRef = useRef<HTMLElement>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [headerVisible, setHeaderVisible] = useState(() => {
+    const saved = localStorage.getItem('headerVisible');
+    return saved !== null ? saved === 'true' : true;
+  });
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Sync state with URL params if they exist
@@ -176,6 +181,14 @@ function App() {
   useEffect(() => { localStorage.setItem('endVerse', endVerse.toString()); }, [endVerse]);
   useEffect(() => { localStorage.setItem('selectedTheme', currentTheme); }, [currentTheme]);
   useEffect(() => { localStorage.setItem('fontSize', fontSize.toString()); }, [fontSize]);
+  useEffect(() => { localStorage.setItem('headerVisible', headerVisible.toString()); }, [headerVisible]);
+
+  useEffect(() => {
+    if (headerRef.current) {
+      const height = headerRef.current.offsetHeight;
+      document.documentElement.style.setProperty('--header-height', `${height}px`);
+    }
+  });
 
   const handleLanguageChange = (lang: string) => {
     setSelectedLanguage(lang);
@@ -310,9 +323,18 @@ ${verses.map(v => `<div class="verse"><span class="vnum">${v.verse}</span>${v.te
   }, [books, selectedBook.id, selectedBook.name]);
 
   return (
-    <div className="app-container" style={{ '--reading-font-size': `${fontSize}px` } as React.CSSProperties}>
-      <header className="top-bar">
+    <div className={`app-container${headerVisible ? '' : ' header-hidden'}`} style={{ '--reading-font-size': `${fontSize}px` } as React.CSSProperties}>
+      <header ref={headerRef} className={`top-bar ${headerVisible ? '' : 'top-bar-hidden'}`}>
         <div className="header-content">
+          <button
+            className="header-toggle-btn"
+            onClick={() => setHeaderVisible(false)}
+            title="Hide header"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="18 15 12 9 6 15" />
+            </svg>
+          </button>
           <div className="top-bar-scroll-area">
             <div className="control-group language-picker">
               <span className="control-label">Language</span>
@@ -468,6 +490,18 @@ ${verses.map(v => `<div class="verse"><span class="vnum">${v.verse}</span>${v.te
           </div>
         )}
       </header>
+
+      {!headerVisible && (
+        <button
+          className="header-show-btn"
+          onClick={() => setHeaderVisible(true)}
+          title="Show header"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+      )}
 
       <main className="reading-area">
         {isLoading ? (

@@ -74,7 +74,7 @@ body {
 }
 
 .top-bar {
-  position: sticky;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
@@ -86,6 +86,13 @@ body {
   z-index: 1000;
   display: flex;
   justify-content: center;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.top-bar-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .header-content {
@@ -184,10 +191,15 @@ select, input[type="number"] {
   width: 100%;
   max-width: var(--container-max-width);
   margin: 0 auto;
-  padding: 80px var(--container-padding);
+  padding: calc(var(--header-height, 80px) + 24px) var(--container-padding) 80px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  transition: padding-top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.header-hidden .reading-area {
+  padding-top: 40px;
 }
 
 .reference-title {
@@ -270,33 +282,61 @@ select, input[type="number"] {
     flex-direction: column;
     align-items: flex-start;
     padding: 16px;
-    gap: 16px;
+    padding-top: 52px;
+    gap: 12px;
+    position: relative;
   }
 
   .top-bar-scroll-area {
     display: grid;
     grid-template-columns: 1fr 1fr;
     width: 100%;
-    gap: 12px;
+    gap: 10px;
+  }
+
+  .control-group {
+    min-width: 0;
   }
 
   .control-group.language-picker {
     grid-column: span 2;
   }
 
+  .control-group select,
+  .control-group input[type="number"] {
+    width: 100%;
+    min-width: 0;
+  }
+
   .actions-group {
     width: 100%;
     justify-content: flex-start;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
+  }
+
+  .actions-group .btn {
+    padding: 0 14px;
+    font-size: 13px;
   }
 
   .divider {
     display: none;
   }
 
+  .header-toggle-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    margin-left: 0;
+  }
+
   .reading-area {
-    padding: 40px 16px;
+    padding: calc(var(--header-height, 240px) + 16px) 16px 60px;
+  }
+
+  .header-hidden .reading-area {
+    padding-top: 24px;
   }
 
   .reference-title {
@@ -334,6 +374,54 @@ select, input[type="number"] {
     max-height: 85vh;
     overflow-y: auto;
   }
+}
+
+.header-toggle-btn {
+  flex: 0 0 auto;
+  height: 40px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 10px;
+  transition: color 0.2s;
+  margin-left: auto;
+}
+
+.header-toggle-btn:hover {
+  color: var(--text-color);
+}
+
+.header-show-btn {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 32px;
+  width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--header-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 0 0 16px 16px;
+  border: 1px solid var(--border-color);
+  border-top: none;
+  z-index: 1000;
+  transition: color 0.2s, background 0.2s;
+}
+
+.header-show-btn:hover {
+  color: var(--text-color);
+  background: var(--input-bg);
 }
 
 .toast {
